@@ -19,6 +19,8 @@ class Vec3 {
     static Vec3 add(Vec3 a, Vec3 b);
     static Vec3 scale(float k, Vec3 a);
     static Vec3 subtract(Vec3 a, Vec3 b);
+    static float dotProduct(Vec3 a, Vec3 b);
+    static Vec3 crossProduct(Vec3 a, Vec3 b);
 
     private:
     //variables

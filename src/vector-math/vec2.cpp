@@ -49,3 +49,16 @@ Vec2 Vec2::subtract(Vec2 a, Vec2 b)
     Vec2 temp = add(a, scalarMultResult);
     return temp;
 }
+
+Vec2 Vec2::normalize(Vec2 a) {
+    float x = a.getX() / a.getLength();
+    float y = a.getY() / a.getLength();
+    Vec2 temp(x, y);
+    return temp;
+}
+
+float Vec2::dotProduct(Vec2 a, Vec2 b)
+{
+    float tmp = a.getX()*b.getX() + a.getY()*b.getY();
+    return tmp;
+}

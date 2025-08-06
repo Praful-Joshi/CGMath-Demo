@@ -17,6 +17,8 @@ class Vec2 {
     static Vec2 add(Vec2 a, Vec2 b);
     static Vec2 scale(float k, Vec2 a);
     static Vec2 subtract(Vec2 a, Vec2 b);
+    static Vec2 normalize(Vec2 a);
+    static float dotProduct(Vec2 a, Vec2 b);
 
 
     private:

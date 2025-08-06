@@ -53,3 +53,17 @@ Vec3 Vec3::subtract(Vec3 a, Vec3 b)
     return temp;
 }
 
+float Vec3::dotProduct(Vec3 a, Vec3 b)
+{
+    float tmp = a.getX()*b.getX() + a.getY()*b.getY() + a.getZ()*b.getZ();
+    return tmp;
+}
+
+Vec3 Vec3::crossProduct(Vec3 a, Vec3 b)
+{
+    float x = a.getY()*b.getZ() - a.getZ()*b.getY();
+    float y = a.getZ()*b.getX() - a.getX()*b.getZ();
+    float z = a.getX()*b.getY() - a.getY()*b.getX();
+    Vec3 tmp(x,y,z);
+    return tmp;
+}

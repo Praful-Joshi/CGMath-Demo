@@ -11,6 +11,15 @@ static GLFWwindow* window = nullptr;
 static GLuint shaderProgram = 0;
 static GLuint vao = 0, vbo = 0;
 
+//camera setup
+static float yaw = -90.0f;   // left-right
+static float pitch = 0.0f;   // up-down
+static float radius = 20.0f; // distance from origin
+static double lastX = 960.0, lastY = 540.0;
+static bool firstMouse = true;
+static bool mouseDown = false;
+
+
 // Shader sources
 const char* vertexShaderSrc = R"glsl(
 #version 330 core
@@ -32,6 +41,37 @@ void main() {
     FragColor = vec4(fragColor, 1.0);
 }
 )glsl";
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        mouseDown = (action == GLFW_PRESS);
+        firstMouse = true; // reset on click
+    }
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (!mouseDown) return;
+
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+        return;
+    }
+
+    float sensitivity = 0.2f;
+    float dx = xpos - lastX;
+    float dy = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    yaw += dx * sensitivity;
+    pitch += dy * sensitivity;
+
+    // clamp pitch
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
+}
 
 
 GLuint compileShader(GLenum type, const char* src) {
@@ -58,7 +98,7 @@ void ensureOpenGLInitialized(const char* title) {
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    window = glfwCreateWindow(800, 600, title, nullptr, nullptr);
+    window = glfwCreateWindow(1920, 1080, title, nullptr, nullptr);
     if (!window) {
         std::cerr << "Window creation failed\n";
         glfwTerminate();
@@ -88,6 +128,10 @@ void ensureOpenGLInitialized(const char* title) {
 
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
+
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+
 }
 
 
@@ -178,16 +222,27 @@ void renderVec3(Vec3* vec3Array, int count)
 {
     ensureOpenGLInitialized("3D Vector Scene");
 
-    glm::mat4 view = glm::lookAt(glm::vec3(10,10,10), glm::vec3(0,0,0), glm::vec3(0,1,0));
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 4.f/3.f, 0.1f, 100.f);
-    glm::mat4 mvp = proj * view;
+    glm::vec3 cameraPos = glm::vec3(10.0f, 10.0f, 10.0f);
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        float yawRad = glm::radians(yaw);
+        float pitchRad = glm::radians(pitch);
+
+        cameraPos.x = radius * cos(pitchRad) * cos(yawRad);
+        cameraPos.y = radius * sin(pitchRad);
+        cameraPos.z = radius * cos(pitchRad) * sin(yawRad);
+
+        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, glm::vec3(0,1,0));
+        glm::mat4 proj = glm::perspective(glm::radians(45.0f), 4.f/3.f, 0.1f, 100.f);
+        glm::mat4 mvp = proj * view;
+
         // Draw XYZ axes
-        drawLine(glm::vec3(3,0,0), glm::vec3(1,0,0), mvp); // X - red
-        drawLine(glm::vec3(0,3,0), glm::vec3(0,1,0), mvp); // Y - green
-        drawLine(glm::vec3(0,0,3), glm::vec3(0,0,1), mvp); // Z - blue
+        drawLine(glm::vec3(1000,0,0), glm::vec3(1,0,0), mvp); // X - red
+        drawLine(glm::vec3(0,1000,0), glm::vec3(0,1,0), mvp); // Y - green
+        drawLine(glm::vec3(0,0,1000), glm::vec3(0,0,1), mvp); // Z - blue
 
         // Draw vectors (yellow)
         for (int i = 0; i < count; i++) {
